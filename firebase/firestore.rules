@@ -1,0 +1,89 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/administrators/$(request.auth.uid)) ||
+        request.auth.token.email in ['tejap1527@gmail.com', 'udayp3806@gmail.com', 'admin@indoor.campus', 'teja@indoor.campus']
+      );
+    }
+
+    // User Profile: /users/{userId}
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.keys().hasAll(['uid', 'email']) &&
+        request.resource.data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'wheelchairAccessibleDefault', 'highContrastMap', 'soundEnabled', 'updatedAt']);
+      allow update: if isOwner(userId) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL', 'wheelchairAccessibleDefault', 'highContrastMap', 'soundEnabled', 'updatedAt']);
+      allow delete: if isOwner(userId) || isAdmin();
+
+      // Subcollection: /users/{userId}/favorites/{favoriteId}
+      match /favorites/{favoriteId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          isValidId(favoriteId) &&
+          request.resource.data.userId == userId &&
+          request.resource.data.keys().hasAll(['id', 'userId', 'locationId', 'locationName', 'savedAt']) &&
+          request.resource.data.keys().hasOnly(['id', 'userId', 'locationId', 'locationName', 'buildingName', 'floorNumber', 'type', 'notes', 'savedAt']);
+        allow update: if isOwner(userId) &&
+          request.resource.data.userId == userId &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['notes', 'locationName', 'savedAt']);
+        allow delete: if isOwner(userId);
+      }
+
+      // Subcollection: /users/{userId}/recentDestinations/{destinationId}
+      match /recentDestinations/{destinationId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+          isValidId(destinationId) &&
+          request.resource.data.userId == userId &&
+          request.resource.data.keys().hasAll(['id', 'userId', 'locationId', 'locationName', 'visitedAt']);
+        allow update: if isOwner(userId) &&
+          request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
+      }
+    }
+
+    // Campus Announcements: /announcements/{announcementId}
+    match /announcements/{announcementId} {
+      // Anyone can read announcements
+      allow read: if true;
+      // Only authorized administrators can publish, update, or remove announcements
+      allow create: if isAdmin() &&
+        isValidId(announcementId) &&
+        request.resource.data.keys().hasAll(['id', 'title', 'content', 'priority', 'active']) &&
+        request.resource.data.priority in ['info', 'warning', 'alert'];
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Administrators registry: /administrators/{adminId}
+    match /administrators/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

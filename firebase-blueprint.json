@@ -1,0 +1,86 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile and accessibility preferences",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 256 },
+        "displayName": { "type": "string", "maxLength": 128 },
+        "photoURL": { "type": "string", "maxLength": 512 },
+        "wheelchairAccessibleDefault": { "type": "boolean" },
+        "highContrastMap": { "type": "boolean" },
+        "soundEnabled": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "UserFavorite": {
+      "title": "UserFavorite",
+      "description": "User saved favorite locations and rooms",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "locationId": { "type": "string", "maxLength": 128 },
+        "locationName": { "type": "string", "maxLength": 128 },
+        "buildingName": { "type": "string", "maxLength": 128 },
+        "floorNumber": { "type": "number" },
+        "type": { "type": "string", "maxLength": 64 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "savedAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "locationId", "locationName", "savedAt"]
+    },
+    "RecentDestination": {
+      "title": "RecentDestination",
+      "description": "User recently searched and navigated destinations",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "locationId": { "type": "string", "maxLength": 128 },
+        "locationName": { "type": "string", "maxLength": 128 },
+        "buildingName": { "type": "string", "maxLength": 128 },
+        "floorNumber": { "type": "number" },
+        "visitedAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "locationId", "locationName", "visitedAt"]
+    },
+    "CampusAnnouncement": {
+      "title": "CampusAnnouncement",
+      "description": "Campus and building notices, closures, and navigation alerts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "buildingId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "content": { "type": "string", "maxLength": 1000 },
+        "priority": { "type": "string", "enum": ["info", "warning", "alert"] },
+        "timestamp": { "type": "string", "maxLength": 128 },
+        "active": { "type": "boolean" },
+        "authorUid": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "title", "content", "priority", "active"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile with personal accessibility and theme preferences"
+    },
+    "/users/{userId}/favorites/{favoriteId}": {
+      "schema": "UserFavorite",
+      "description": "Private favorite places saved by the user"
+    },
+    "/users/{userId}/recentDestinations/{destinationId}": {
+      "schema": "RecentDestination",
+      "description": "Private recent navigation history for the user"
+    },
+    "/announcements/{announcementId}": {
+      "schema": "CampusAnnouncement",
+      "description": "Public building announcements and safety alerts published by administrators"
+    }
+  }
+}

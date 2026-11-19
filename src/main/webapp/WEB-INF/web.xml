@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>Smart Indoor Navigation System</display-name>
+
+    <!-- Context Initialization Parameters -->
+    <context-param>
+        <param-name>db.url</param-name>
+        <param-value>jdbc:mysql://localhost:3306/indoor_nav_db?useSSL=false&amp;serverTimezone=UTC</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.user</param-name>
+        <param-value>indoor_user</param-value>
+    </context-param>
+    <context-param>
+        <param-name>db.password</param-name>
+        <param-value>indoor_secure_password</param-value>
+    </context-param>
+
+    <!-- Firebase Authentication & Security Filter -->
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.indoor.security.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/api/users/*</url-pattern>
+        <url-pattern>/api/admin/*</url-pattern>
+    </filter-mapping>
+
+    <!-- CORS & Response Headers Filter -->
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.indoor.security.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <!-- API Servlets -->
+    <servlet>
+        <servlet-name>BuildingServlet</servlet-name>
+        <servlet-class>com.indoor.controller.BuildingServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BuildingServlet</servlet-name>
+        <url-pattern>/api/buildings/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LocationSearchServlet</servlet-name>
+        <servlet-class>com.indoor.controller.LocationSearchServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LocationSearchServlet</servlet-name>
+        <url-pattern>/api/locations</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>FloorMapServlet</servlet-name>
+        <servlet-class>com.indoor.controller.FloorMapServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FloorMapServlet</servlet-name>
+        <url-pattern>/api/floors/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RouteCalculationServlet</servlet-name>
+        <servlet-class>com.indoor.controller.RouteCalculationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RouteCalculationServlet</servlet-name>
+        <url-pattern>/api/routes</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AnnouncementServlet</servlet-name>
+        <servlet-class>com.indoor.controller.AnnouncementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AnnouncementServlet</servlet-name>
+        <url-pattern>/api/announcements</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>30</session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <secure>true</secure>
+        </cookie-config>
+    </session-config>
+</web-app>

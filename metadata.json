@@ -1,0 +1,8 @@
+{
+  "name": "NaviCampus - Smart Indoor Navigation",
+  "description": "Premium iPhone-inspired indoor navigation system for campuses, hospitals, and malls with multi-floor Dijkstra routing and Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
